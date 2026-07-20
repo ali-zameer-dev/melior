@@ -49,3 +49,16 @@ jobs:
         run: pip install bandit
       - name: Run Bandit scan
         run: bandit -r app/ -ll
+
+  trivy-scan:
+    name: Container/Filesystem Security Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
