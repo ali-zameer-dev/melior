@@ -1,0 +1,73 @@
+trigger:
+  - develop
+
+pr:
+  - develop
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  pythonVersion: '3.12'
+
+steps:
+
+# 1. Checkout source code
+- checkout: self
+
+# 2. Install Python
+- task: UsePythonVersion@0
+  displayName: 'Set up Python'
+  inputs:
+    versionSpec: '$(pythonVersion)'
+
+# 3. Show repository contents
+- script: |
+    echo "Current directory:"
+    pwd
+
+    echo "Repository contents:"
+    find . -maxdepth 3 -type f | sort
+
+    echo "Tests directory:"
+    ls -la tests || true
+
+    echo "Application directory:"
+    ls -la app || true
+  displayName: 'Verify repository contents'
+
+# 4. Install dependencies
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+    pip install pytest flake8 bandit
+  displayName: 'Install dependencies'
+
+# 5. Lint
+- script: |
+    python -m flake8 app tests
+  displayName: 'Run flake8'
+
+# 6. Run tests
+- script: |
+    export PYTHONPATH="$(System.DefaultWorkingDirectory)"
+    python -m pytest tests/test_app.py -v
+  displayName: 'Run tests'
+
+# 7. Static security scan - Bandit
+- script: |
+    bandit -r app
+  displayName: 'Run Bandit security scan'
+
+# 8. Build Docker image
+- script: |
+    docker build -t melior:$(Build.BuildId) .
+  displayName: 'Build Docker image'
+
+# 9. Scan Docker image with Trivy
+- script: |
+    docker run --rm \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      aquasec/trivy:latest \
+      image --severity HIGH,CRITICAL --exit-code 1 melior:$(Build.BuildId)
+  displayName: 'Run Trivy container scan'
