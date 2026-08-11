@@ -21,36 +21,50 @@ steps:
   inputs:
     versionSpec: '$(pythonVersion)'
 
-# 3. Install dependencies
+# 3. Show repository contents
+- script: |
+    echo "Current directory:"
+    pwd
+
+    echo "Repository contents:"
+    find . -maxdepth 3 -type f | sort
+
+    echo "Tests directory:"
+    ls -la tests || true
+
+    echo "Application directory:"
+    ls -la app || true
+  displayName: 'Verify repository contents'
+
+# 4. Install dependencies
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
     pip install pytest flake8 bandit
   displayName: 'Install dependencies'
 
-# 4. Lint
+# 5. Lint
 - script: |
-    python -m pytest
-  displayName: 'Run tests'
-  env:
-    PYTHONPATH: $(System.DefaultWorkingDirectory)
+    python -m flake8 app tests
+  displayName: 'Run flake8'
 
-# 5. Run tests
+# 6. Run tests
 - script: |
-    pytest
+    export PYTHONPATH="$(System.DefaultWorkingDirectory)"
+    python -m pytest tests/test_app.py -v
   displayName: 'Run tests'
 
-# 6. Security scan - Bandit
+# 7. Static security scan - Bandit
 - script: |
     bandit -r app
   displayName: 'Run Bandit security scan'
 
-# 7. Build Docker image
+# 8. Build Docker image
 - script: |
     docker build -t melior:$(Build.BuildId) .
   displayName: 'Build Docker image'
 
-# 8. Scan Docker image with Trivy
+# 9. Scan Docker image with Trivy
 - script: |
     docker run --rm \
       -v /var/run/docker.sock:/var/run/docker.sock \
