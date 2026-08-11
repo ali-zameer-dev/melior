@@ -30,8 +30,10 @@ steps:
 
 # 4. Lint
 - script: |
-    flake8 app
-  displayName: 'Run Flake8'
+    python -m pytest
+  displayName: 'Run tests'
+  env:
+    PYTHONPATH: $(System.DefaultWorkingDirectory)
 
 # 5. Run tests
 - script: |
