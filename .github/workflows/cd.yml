@@ -7,7 +7,6 @@ on:
     branches: [main]
 
 jobs:
-
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -64,7 +63,7 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
           script: |
-            cd ~/projects/melior
+            cd ~/melior
             git pull origin main
             source venv/bin/activate
             pip install -r requirements.txt
