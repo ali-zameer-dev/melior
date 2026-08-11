@@ -1,0 +1,5 @@
+# pip's internal vendored SBOM (bom.cdx.json) reports pip's own bundled
+# tooling dependencies, not application-level packages. These are not
+# part of melior's runtime attack surface. See bom.cdx.json in pip/_vendor.
+GHSA-6v7p-g79w-8964
+CVE-2025-47273
