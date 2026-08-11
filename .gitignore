@@ -3,3 +3,9 @@ github_deploy_key.pub
 .env.docker
 venv/
 venv/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.env
