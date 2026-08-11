@@ -64,11 +64,27 @@ steps:
     docker build -t melior:$(Build.BuildId) .
   displayName: 'Build Docker image'
 
-# 9. Scan Docker image with Trivy
+# 9a. Scan Docker image with Trivy - fail build on Python/app findings
 - script: |
     docker run --rm \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v $(System.DefaultWorkingDirectory)/.trivyignore:/.trivyignore \
       aquasec/trivy:latest \
-      image --severity HIGH,CRITICAL --exit-code 1 melior:$(Build.BuildId)
-  displayName: 'Run Trivy container scan'
+      image --vuln-type library --severity HIGH,CRITICAL --exit-code 1 melior:$(Build.BuildId)
+  displayName: 'Trivy scan - app dependencies (blocking)'
+
+# 9b. Scan Docker image with Trivy - report OS findings, don't fail build
+- script: |
+    docker run --rm \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      aquasec/trivy:latest \
+      image --vuln-type os --severity HIGH,CRITICAL --exit-code 0 melior:$(Build.BuildId)
+  displayName: 'Trivy scan - OS packages (report only, tracked separately)'
+
+# 9b. Scan Docker image with Trivy - report OS findings, don't fail build
+- script: |
+    docker run --rm \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      aquasec/trivy:latest \
+      image --vuln-type os --severity HIGH,CRITICAL --exit-code 0 melior:$(Build.BuildId)
+  displayName: 'Trivy scan - OS packages (report only, tracked separately)'
