@@ -6,4 +6,7 @@ def test_hello_world():
     response = client.get("/")
 
     assert response.status_code == 200
-    assert response.get_json()["message"] == "Hello, World! - Melior DevSecOps Internship"
+    assert (
+        response.get_json()["message"]
+        == "Hello, World! - Melior DevSecOps Internship"
+    )
